@@ -1025,24 +1025,10 @@ body {
     }
 }
 
-/* Disabled button styles */
-.btn[disabled] {
-    opacity: 0.6;
-    cursor: not-allowed;
-    pointer-events: none;
-}
-
-.btn-outline[disabled],
-.btn-outline-light[disabled] {
-    opacity: 0.5;
-    cursor: not-allowed;
-    pointer-events: none;
-}
-
-/* Properties Section Styles */
+/* Properties Section */
 .properties {
     padding: 6rem 0;
-    background: var(--dark);
+    background: var(--dark-light);
 }
 
 .properties-grid {
@@ -1053,17 +1039,18 @@ body {
 }
 
 .property-card {
-    background: var(--dark-light);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--dark);
     border-radius: 1rem;
     padding: 2rem;
     text-align: center;
-    transition: transform 0.3s, box-shadow 0.3s;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid rgba(99, 102, 241, 0.1);
 }
 
 .property-card:hover {
     transform: translateY(-5px);
     box-shadow: var(--shadow-xl);
+    border-color: var(--primary);
 }
 
 .property-icon {
@@ -1083,50 +1070,58 @@ body {
     line-height: 1.6;
 }
 
-/* Contact Section Styles */
+/* Contact Section */
 .contact {
     padding: 6rem 0;
-    background: linear-gradient(180deg, var(--dark) 0%, var(--dark-light) 100%);
+    background: var(--dark);
 }
 
-.contact-content {
-    max-width: 800px;
-    margin: 0 auto;
+.contact-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    margin-top: 3rem;
 }
 
-.contact-info {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-}
-
-.contact-item {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    padding: 1.5rem;
+.contact-card {
     background: var(--dark-light);
-    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 1rem;
-    transition: transform 0.3s, border-color 0.3s;
+    padding: 2rem;
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid rgba(99, 102, 241, 0.1);
 }
 
-.contact-item:hover {
-    transform: translateX(5px);
+.contact-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-xl);
     border-color: var(--primary);
 }
 
 .contact-icon {
-    font-size: 2.5rem;
+    font-size: 3rem;
+    margin-bottom: 1rem;
 }
 
-.contact-item h4 {
-    font-size: 1.1rem;
+.contact-card h3 {
+    font-size: 1.25rem;
+    margin-bottom: 0.75rem;
     color: var(--white);
-    margin-bottom: 0.25rem;
 }
 
-.contact-item p {
+.contact-card p {
     color: var(--gray-light);
     font-size: 0.95rem;
+}
+
+/* Disabled Button Styles */
+.btn[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.btn-primary[disabled] {
+    background: var(--gray);
+    border-color: var(--gray);
 }
