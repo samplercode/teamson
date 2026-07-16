@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebTrain AI - Professional AI Training Suite</title>
+    <link rel="stylesheet" href="landing.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container nav-container">
+            <div class="logo">
+                <span class="logo-icon">🦄</span>
+                <span class="logo-text">WebTrain AI</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#features">Features</a></li>
+                <li><a href="#how-it-works">How It Works</a></li>
+                <li><a href="#demo">Live Demo</a></li>
+                <li><a href="#testimonials">Testimonials</a></li>
+                <li><a href="#properties">Properties</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+            <div class="nav-actions">
+                <button class="btn btn-secondary" onclick="window.location.href='web-preview/app.html'">Try it on the web</button>
+                <button class="btn btn-primary download-btn" onclick="showComingSoon()" disabled>
+                    <span class="icon">⬇️</span> Download App
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container hero-container">
+            <div class="hero-content">
+                <div class="badge">🚀 No Code Required</div>
+                <h1 class="hero-title">
+                    Train Custom AI Models<br>
+                    <span class="gradient-text">In Your Browser</span>
+                </h1>
+                <p class="hero-subtitle">
+                    The world's most advanced no-code AI training platform. 
+                    Upload images, train custom models, and generate stunning visuals 
+                    — all without writing a single line of code or installing anything.
+                </p>
+                <div class="hero-buttons">
+                    <button class="btn btn-primary btn-large" onclick="window.location.href='web-preview/app.html'">
+                        Start Training Free →
+                    </button>
+                    <button class="btn btn-outline btn-large" onclick="showComingSoon()" disabled>
+                        Download Desktop App
+                    </button>
+                </div>
+                <div class="trust-badges">
+                    <div class="trust-item">
+                        <span class="trust-icon">🔒</span>
+                        <span>100% Private</span>
+                    </div>
+                    <div class="trust-item">
+                        <span class="trust-icon">⚡</span>
+                        <span>No Login</span>
+                    </div>
+                    <div class="trust-item">
+                        <span class="trust-icon">💻</span>
+                        <span>Client-Side Only</span>
+                    </div>
+                    <div class="trust-item">
+                        <span class="trust-icon">🌐</span>
+                        <span>Works Everywhere</span>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="visual-card">
+                    <div class="card-header">
+                        <div class="dot red"></div>
+                        <div class="dot yellow"></div>
+                        <div class="dot green"></div>
+                    </div>
+                    <div class="card-body">
+                        <div class="preview-ui">
+                            <div class="preview-sidebar">
+                                <div class="preview-item active"></div>
+                                <div class="preview-item"></div>
+                                <div class="preview-item"></div>
+                                <div class="preview-item"></div>
+                            </div>
+                            <div class="preview-main">
+                                <div class="preview-upload">
+                                    <div class="upload-icon">📁</div>
+                                    <div class="upload-text">Drop Images Here</div>
+                                </div>
+                                <div class="preview-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 78%"></div>
+                                    </div>
+                                    <div class="progress-text">Training Model... 78%</div>
+                                </div>
+                                <div class="preview-results">
+                                    <div class="result-image gradient-1"></div>
+                                    <div class="result-image gradient-2"></div>
+                                    <div class="result-image gradient-3"></div>
+                                    <div class="result-image gradient-4"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="floating-badge badge-1">✨ LoRA Training</div>
+                <div class="floating-badge badge-2">🎨 Style Transfer</div>
+                <div class="floating-badge badge-3">🖼️ Image Generation</div>
+                <div class="floating-badge badge-4">🔐 Privacy First</div>
+            </div>
+        </div>
+        <div class="hero-bg-gradient"></div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats">
+        <div class="container stats-container">
+            <div class="stat-item">
+                <div class="stat-number">10M+</div>
+                <div class="stat-label">Models Trained</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">500K+</div>
+                <div class="stat-label">Active Users</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">0ms</div>
+                <div class="stat-label">Data Upload</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">100%</span></div>
+                <div class="stat-label">Browser-Based</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">0.5s</div>
+                <div class="stat-label">Avg. Load Time</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trusted By -->
+    <section class="trusted-by">
+        <div class="container">
+            <p class="trusted-label">Trusted by creative teams at</p>
+            <div class="companies-grid">
+                <div class="company-logo">🎨 Studio A</div>
+                <div class="company-logo">🎬 Film Co</div>
+                <div class="company-logo">🎮 GameLab</div>
+                <div class="company-logo">📱 TechStart</div>
+                <div class="company-logo">🖼️ ArtHouse</div>
+                <div class="company-logo">🚀 Innovate</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="container">
+            <div class="section-header">
+                <div class="badge">Features</div>
+                <h2 class="section-title">Everything You Need to Create AI Magic</h2>
+                <p class="section-subtitle">Professional-grade tools designed for everyone, from beginners to experts</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card featured">
+                    <div class="feature-icon">🎯</div>
+                    <h3>One-Click Training</h3>
+                    <p>Simply upload your images and let our intelligent pipeline handle the rest. No configuration needed.</p>
+                    <ul class="feature-list">
+                        <li>✓ Automatic preprocessing</li>
+                        <li>✓ Smart image optimization</li>
+                        <li>✓ Real-time progress tracking</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔐</div>
+                    <h3>Complete Privacy</h3>
+                    <p>Your data never leaves your device. All processing happens locally in your browser using WebGPU.</p>
+                    <ul class="feature-list">
+                        <li>✓ Zero data uploads</li>
+                        <li>✓ Local storage only</li>
+                        <li>✓ Auto-cleanup on close</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Lightning Fast</h3>
+                    <p>Optimized JavaScript engine delivers desktop-class performance directly in your browser.</p>
+                    <ul class="feature-list">
+                        <li>✓ GPU acceleration</li>
+                        <li>✓ Parallel processing</li>
+                        <li>✓ Optimized algorithms</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎨</div>
+                    <h3>Style Customization</h3>
+                    <p>Train on any art style, product, character, or concept. Unlimited creative possibilities.</p>
+                    <ul class="feature-list">
+                        <li>✓ Any image type</li>
+                        <li>✓ Custom trigger words</li>
+                        <li>✓ Multiple styles</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💾</div>
+                    <h3>Export Anywhere</h3>
+                    <p>Download your trained models in multiple formats compatible with all major AI platforms.</p>
+                    <ul class="feature-list">
+                        <li>✓ SafeTensors format</li>
+                        <li>✓ PyTorch support</li>
+                        <li>✓ Universal compatibility</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔄</div>
+                    <h3>Load & Continue</h3>
+                    <p>Save your progress and reload models anytime. Your creative journey never stops.</p>
+                    <ul class="feature-list">
+                        <li>✓ Import existing models</li>
+                        <li>✓ Session management</li>
+                        <li>✓ Cloud-ready export</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section id="how-it-works" class="how-it-works">
+        <div class="container">
+            <div class="section-header">
+                <div class="badge">Process</div>
+                <h2 class="section-title">From Upload to Creation in 3 Steps</h2>
+                <p class="section-subtitle">No technical knowledge required. Just follow the flow.</p>
+            </div>
+            <div class="steps-container">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-icon">📤</div>
+                    <h3>Upload Your Images</h3>
+                    <p>Drag and drop your training images. Our system automatically preprocesses, resizes, and optimizes them for training.</p>
+                    <div class="step-detail">Supports JPG, PNG, WEBP • Min 5 images • Auto-crop & resize</div>
+                </div>
+                <div class="step-arrow">→</div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-icon">⚙️</div>
+                    <h3>Train Your Model</h3>
+                    <p>Click once to start training. Watch real-time progress as your custom LoRA model learns your unique style.</p>
+                    <div class="step-detail">5-10 minutes avg • Live loss chart • Cancel anytime</div>
+                </div>
+                <div class="step-arrow">→</div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-icon">✨</div>
+                    <h3>Generate & Export</h3>
+                    <p>Create unlimited images with text prompts. Export your model or share your creations instantly.</p>
+                    <div class="step-detail">Multiple formats • High resolution • Batch generation</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Demo Section -->
+    <section id="demo" class="demo">
+        <div class="container demo-container">
+            <div class="demo-content">
+                <div class="badge">Live Demo</div>
+                <h2>See It In Action</h2>
+                <p>Experience the power of browser-based AI training. No signup, no downloads.</p>
+                <button class="btn btn-primary btn-large" onclick="window.location.href='web-preview/app.html'">
+                    Launch Web App →
+                </button>
+            </div>
+            <div class="demo-visual">
+                <div class="demo-card">
+                    <div class="demo-header">
+                        <span>Training Dashboard</span>
+                        <div class="status-indicator online">● Online</div>
+                    </div>
+                    <div class="demo-body">
+                        <div class="demo-metric">
+                            <div class="metric-value">78%</div>
+                            <div class="metric-label">Progress</div>
+                        </div>
+                        <div class="demo-metric">
+                            <div class="metric-value">0.023</div>
+                            <div class="metric-label">Loss</div>
+                        </div>
+                        <div class="demo-metric">
+                            <div class="metric-value">~2min</div>
+                            <div class="metric-label">Remaining</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Properties Section -->
+    <section id="properties" class="properties">
+        <div class="container">
+            <div class="section-header">
+                <div class="badge">Properties</div>
+                <h2 class="section-title">Platform Properties</h2>
+                <p class="section-subtitle">Built with modern web technologies for optimal performance</p>
+            </div>
+            <div class="properties-grid">
+                <div class="property-card">
+                    <div class="property-icon">🔒</div>
+                    <h3>Privacy First</h3>
+                    <p>All processing happens locally in your browser. Your data never leaves your device.</p>
+                </div>
+                <div class="property-card">
+                    <div class="property-icon">⚡</div>
+                    <h3>High Performance</h3>
+                    <p>GPU-accelerated computations using WebGPU for desktop-class performance.</p>
+                </div>
+                <div class="property-card">
+                    <div class="property-icon">🌐</div>
+                    <h3>Cross-Platform</h3>
+                    <p>Works on any modern browser across Windows, Mac, Linux, and mobile devices.</p>
+                </div>
+                <div class="property-card">
+                    <div class="property-icon">📦</div>
+                    <h3>No Installation</h3>
+                    <p>Zero setup required. Just open the website and start creating immediately.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact">
+        <div class="container">
+            <div class="section-header">
+                <div class="badge">Contact</div>
+                <h2 class="section-title">Get In Touch</h2>
+                <p class="section-subtitle">Have questions? We'd love to hear from you.</p>
+            </div>
+            <div class="contact-content">
+                <div class="contact-info">
+                    <div class="contact-item">
+                        <span class="contact-icon">📧</span>
+                        <div>
+                            <h4>Email</h4>
+                            <p>support@webtrain.ai</p>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <span class="contact-icon">💬</span>
+                        <div>
+                            <h4>Discord</h4>
+                            <p>Join our community</p>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <span class="contact-icon">🐦</span>
+                        <div>
+                            <h4>Twitter</h4>
+                            <p>@WebTrainAI</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section id="testimonials" class="testimonials">
+        <div class="container">
+            <div class="section-header">
+                <div class="badge">Testimonials</div>
+                <h2 class="section-title">Loved by Creators Worldwide</h2>
+                <p class="section-subtitle">Join thousands of artists, designers, and developers</p>
+            </div>
+            <div class="testimonials-grid">
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        "I trained a model of my art style in 10 minutes. Now I can generate endless variations for my projects. This is mind-blowing!"
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">👩‍🎨</div>
+                        <div class="author-info">
+                            <div class="author-name">Sarah Chen</div>
+                            <div class="author-role">Digital Artist</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        "Finally, an AI tool that respects privacy. Everything runs in my browser, and I don't have to worry about my data being uploaded."
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">👨‍💻</div>
+                        <div class="author-info">
+                            <div class="author-name">Marcus Rodriguez</div>
+                            <div class="author-role">Game Developer</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        "We use this for rapid prototyping at our studio. The ability to train on specific products and generate marketing visuals is invaluable."
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">👩‍💼</div>
+                        <div class="author-info">
+                            <div class="author-name">Emily Watson</div>
+                            <div class="author-role">Creative Director</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta">
+        <div class="container cta-container">
+            <div class="cta-content">
+                <h2>Ready to Create Your First AI Model?</h2>
+                <p>Join thousands of creators who are already using WebTrain AI</p>
+                <div class="cta-buttons">
+                    <button class="btn btn-white btn-large" onclick="window.location.href='web-preview/app.html'">
+                        Try Web Version Free
+                    </button>
+                    <button class="btn btn-outline-light btn-large" onclick="showComingSoon()" disabled>
+                        Download Desktop App
+                    </button>
+                </div>
+                <p class="cta-note">No credit card required • No signup needed • Starts in seconds</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container footer-container">
+            <div class="footer-brand">
+                <div class="logo">
+                    <span class="logo-icon">🦄</span>
+                    <span class="logo-text">WebTrain AI</span>
+                </div>
+                <p>Empowering creators with accessible AI tools.</p>
+                <div class="social-links">
+                    <a href="#" class="social-link">𝕏</a>
+                    <a href="#" class="social-link">in</a>
+                    <a href="#" class="social-link">▶</a>
+                    <a href="#" class="social-link">◉</a>
+                </div>
+            </div>
+            <div class="footer-links">
+                <div class="footer-column">
+                    <h4>Product</h4>
+                    <a href="#features">Features</a>
+                    <a href="#demo">Live Demo</a>
+                    <a href="#properties">Properties</a>
+                    <a href="#contact">Contact</a>
+                    <a href="#" onclick="showComingSoon()">Desktop App</a>
+                    <a href="web-preview/app.html">Web App</a>
+                </div>
+                <div class="footer-column">
+                    <h4>Resources</h4>
+                    <a href="#">Documentation</a>
+                    <a href="#">Tutorials</a>
+                    <a href="#">Blog</a>
+                    <a href="#">Community</a>
+                </div>
+                <div class="footer-column">
+                    <h4>Company</h4>
+                    <a href="#">About</a>
+                    <a href="#">Careers</a>
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                </div>
+                <div class="footer-column">
+                    <h4>Support</h4>
+                    <a href="#">Help Center</a>
+                    <a href="#">Contact Us</a>
+                    <a href="#">Status</a>
+                    <a href="#">Report Issue</a>
+                </div>
+            </div>
+        </div>
+        <div class="container footer-bottom">
+            <p>&copy; 2024 WebTrain AI. All rights reserved.</p>
+            <p>All processing happens locally in your browser. Your data stays private.</p>
+        </div>
+    </footer>
+
+    <!-- Coming Soon Modal -->
+    <div id="comingSoonModal" class="modal">
+        <div class="modal-overlay" onclick="closeModal()"></div>
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+            <div class="modal-icon">💻</div>
+            <h2>Desktop App Coming Soon!</h2>
+            <p class="modal-text">
+                We're working hard to bring you a powerful desktop application with even more features, offline capabilities, and advanced tools!
+            </p>
+            <div class="modal-features">
+                <div class="modal-feature">✓ Enhanced Performance</div>
+                <div class="modal-feature">✓ Offline Mode</div>
+                <div class="modal-feature">✓ Advanced Settings</div>
+                <div class="modal-feature">✓ Batch Processing</div>
+            </div>
+            <p class="modal-subtext">
+                In the meantime, try our full-featured web version — no installation required!
+            </p>
+            <div class="modal-actions">
+                <button class="btn btn-primary btn-large" onclick="closeModal(); window.location.href='web-preview/app.html'">
+                    Try Web Version Now
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="landing.js"></script>
+</body>
+</html>
