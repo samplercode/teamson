@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebTrain AI - Train Custom Models in Your Browser</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="description" content="Train custom AI image generation models directly in your browser. No login, no uploads, 100% private.">
+    <meta name="theme-color" content="#6366f1">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                    <circle cx="20" cy="20" r="18" stroke="#6366f1" stroke-width="2"/>
+                    <path d="M12 20 L18 26 L28 14" stroke="#6366f1" stroke-width="2" fill="none"/>
+                </svg>
+                <h1>WebTrain AI</h1>
+            </div>
+            <nav class="nav">
+                <button class="nav-btn active" data-tab="train">🎯 Train</button>
+                <button class="nav-btn" data-tab="generate">✨ Generate</button>
+                <button class="nav-btn" data-tab="library">📚 Library</button>
+                <button class="nav-btn" data-tab="settings">⚙️ Settings</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <!-- Train Tab -->
+        <section id="train-tab" class="tab-content active">
+            <div class="container">
+                <div class="card">
+                    <h2>📁 Upload Training Images</h2>
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-icon">📤</div>
+                        <p>Drag & drop images here or click to browse</p>
+                        <p class="hint">Supports: JPG, PNG, WEBP (Min 5 images recommended)</p>
+                        <input type="file" id="fileInput" multiple accept="image/*" hidden>
+                    </div>
+                    <div class="image-preview" id="imagePreview"></div>
+                    <div class="stats" id="uploadStats">
+                        <span>Images: <strong id="imageCount">0</strong></span>
+                        <span>Status: <strong id="uploadStatus">Ready</strong></span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>⚙️ Training Configuration</h2>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="triggerWord">Trigger Word *</label>
+                            <input type="text" id="triggerWord" placeholder="e.g., myartstyle, johnface">
+                            <small>Unique identifier for your model</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="trainingSteps">Training Steps</label>
+                            <input type="range" id="trainingSteps" min="100" max="2000" value="500" step="100">
+                            <span id="stepsValue">500</span>
+                        </div>
+                        <div class="form-group">
+                            <label for="learningRate">Learning Rate</label>
+                            <select id="learningRate">
+                                <option value="0.0001">0.0001 (Slow, Stable)</option>
+                                <option value="0.0005" selected>0.0005 (Balanced)</option>
+                                <option value="0.001">0.001 (Fast, Risk of Overfit)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="batchSize">Batch Size</label>
+                            <select id="batchSize">
+                                <option value="1">1 (Low Memory)</option>
+                                <option value="2" selected>2 (Recommended)</option>
+                                <option value="4">4 (High Memory)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-section" id="progressSection" style="display: none;">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                        <div class="progress-info">
+                            <span id="progressText">Initializing...</span>
+                            <span id="progressPercent">0%</span>
+                        </div>
+                        <canvas id="lossChart" width="600" height="200"></canvas>
+                    </div>
+
+                    <div class="button-group">
+                        <button class="btn btn-primary" id="startTrainBtn">🚀 Start Training</button>
+                        <button class="btn btn-secondary" id="cancelTrainBtn" disabled>❌ Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Generate Tab -->
+        <section id="generate-tab" class="tab-content">
+            <div class="container">
+                <div class="card">
+                    <h2>✨ Generate Images</h2>
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label for="prompt">Prompt *</label>
+                            <textarea id="prompt" rows="3" placeholder="Describe the image you want to generate..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="modelSelect">Select Model</label>
+                            <select id="modelSelect">
+                                <option value="base">Base Model (No LoRA)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="guidance">Guidance Scale</label>
+                            <input type="range" id="guidance" min="1" max="20" value="7.5" step="0.5">
+                            <span id="guidanceValue">7.5</span>
+                        </div>
+                        <div class="form-group">
+                            <label for="inferSteps">Inference Steps</label>
+                            <input type="range" id="inferSteps" min="10" max="100" value="50" step="5">
+                            <span id="inferStepsValue">50</span>
+                        </div>
+                        <div class="form-group">
+                            <label for="seed">Seed (-1 for random)</label>
+                            <input type="number" id="seed" value="-1" placeholder="-1">
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button class="btn btn-primary" id="generateBtn">🎨 Generate</button>
+                        <button class="btn btn-secondary" id="clearGenerateBtn">🗑️ Clear</button>
+                    </div>
+
+                    <div class="gallery" id="generatedGallery"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Library Tab -->
+        <section id="library-tab" class="tab-content">
+            <div class="container">
+                <div class="card">
+                    <h2>📚 Model Library</h2>
+                    <p class="hint">Your trained models are stored locally. Download to save permanently.</p>
+                    
+                    <div class="library-grid" id="libraryGrid">
+                        <div class="empty-state" id="emptyLibrary">
+                            <div class="empty-icon">📭</div>
+                            <p>No models trained yet</p>
+                            <p class="hint">Train your first model to see it here</p>
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button class="btn btn-secondary" id="importModelBtn">📥 Import Model</button>
+                        <button class="btn btn-danger" id="clearAllBtn">🗑️ Clear All</button>
+                        <input type="file" id="importFile" accept=".safetensors,.pt,.bin" hidden>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Settings Tab -->
+        <section id="settings-tab" class="tab-content">
+            <div class="container">
+                <div class="card">
+                    <h2>⚙️ Settings</h2>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="outputFormat">Export Format</label>
+                            <select id="outputFormat">
+                                <option value="safetensors">SafeTensors (.safetensors)</option>
+                                <option value="pt">PyTorch (.pt)</option>
+                                <option value="bin">Binary (.bin)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="precision">Model Precision</label>
+                            <select id="precision">
+                                <option value="fp16">FP16 (Faster, Less Memory)</option>
+                                <option value="fp32" selected>FP32 (Standard)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="useGPU">Use GPU Acceleration</label>
+                            <select id="useGPU">
+                                <option value="auto" selected>Auto Detect</option>
+                                <option value="webgl">WebGL</option>
+                                <option value="wasm">WebAssembly (CPU)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="maxImages">Max Training Images</label>
+                            <input type="number" id="maxImages" value="50" min="5" max="200">
+                        </div>
+                    </div>
+
+                    <div class="info-box">
+                        <h3>💡 Privacy Notice</h3>
+                        <p>All processing happens entirely in your browser. Your images and models never leave your device. When you close this tab, all temporary data is automatically cleared unless you explicitly download your models.</p>
+                    </div>
+
+                    <div class="button-group">
+                        <button class="btn btn-primary" id="saveSettingsBtn">💾 Save Settings</button>
+                        <button class="btn btn-danger" id="clearDataBtn">🗑️ Clear All Data</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>ℹ️ About</h2>
+                    <div class="about-content">
+                        <p><strong>WebTrain AI</strong> is a browser-based tool for training custom AI image generation models without any installations or logins.</p>
+                        <p><strong>Technology:</strong> Built with TensorFlow.js, ONNX Runtime Web, and modern web standards.</p>
+                        <p><strong>License:</strong> MIT License - Free and open source.</p>
+                        <div class="links">
+                            <a href="#" class="link">Documentation</a>
+                            <a href="#" class="link">GitHub</a>
+                            <a href="#" class="link">Report Issue</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>© 2024 WebTrain AI. All processing happens locally in your browser.</p>
+            <p class="status">System Status: <span id="systemStatus">Checking...</span></p>
+        </div>
+    </footer>
+
+    <!-- Modal for model details -->
+    <div class="modal" id="modelModal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2 id="modalTitle">Model Details</h2>
+            <div id="modalBody"></div>
+            <div class="button-group">
+                <button class="btn btn-primary" id="downloadModelBtn">⬇️ Download</button>
+                <button class="btn btn-danger" id="deleteModelBtn">🗑️ Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="utils.js"></script>
+    <script src="trainer.js"></script>
+    <script src="generator.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
