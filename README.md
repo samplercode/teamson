@@ -1,223 +1,204 @@
-# AutoTrain AI - No-Code Custom Model Training Software
+# WebTrain AI - Browser-Based No-Code Model Trainer
 
-![AutoTrain AI](https://img.shields.io/badge/version-1.0-blue)
-![Python](https://img.shields.io/badge/python-3.8+-green)
-![License](https://img.shields.io/badge/license-MIT-yellow)
+## Overview
+**WebTrain AI** is a completely client-side, privacy-focused web application that allows users to train custom AI image generation models directly in their browser. No login required, no server uploads, no installations.
 
-## 🎯 Overview
+## Key Features
 
-**AutoTrain AI** is a user-friendly desktop application that allows anyone to train custom AI image generation models **without writing any code**. Simply upload your images, add labels, and click train!
+### 🔒 Privacy First
+- **100% Client-Side**: All processing happens in your browser using WebAssembly and TensorFlow.js
+- **No Login Required**: Just open the website and start training
+- **No Data Upload**: Your images never leave your computer
+- **Temporary Session**: Data is automatically cleared when you close the tab
 
-This software uses **LoRA (Low-Rank Adaptation)** technology to efficiently fine-tune Stable Diffusion models on your custom datasets, creating small, portable model files that can be shared and reused.
+### 🎨 Professional Features
+- Drag-and-drop image upload
+- Automatic image preprocessing (resize, crop, normalize)
+- Real-time training visualization
+- Custom trigger word configuration
+- Model export/download functionality
+- Load previously saved models
+- Text-to-image generation with custom models
 
-## ✨ Features
+### 🚀 Technology Stack
+- **Frontend**: Pure HTML5, CSS3, Modern JavaScript (ES6+)
+- **AI Engine**: TensorFlow.js + ONNX Runtime Web
+- **Image Processing**: Canvas API + WebGL acceleration
+- **Storage**: IndexedDB for temporary session storage
+- **Model Format**: LoRA-compatible weights for easy export
 
-### 🚀 Easy Training
-- **Drag & Drop Interface**: Simply select a folder with your training images
-- **Automatic Preprocessing**: Images are automatically resized and formatted
-- **No Coding Required**: Everything works through a visual interface
-- **Real-time Progress**: Watch training progress with detailed logs
+## Project Structure
 
-### 🎨 Image Generation
-- **Text-to-Image**: Generate images from text prompts using your trained models
-- **Custom Models**: Use your trained LoRA models or load existing ones
-- **Advanced Controls**: Adjust guidance scale, steps, and more
-- **Save Results**: Export generated images in PNG or JPEG format
+```
+web-preview/
+├── index.html          # Main application interface
+├── styles.css          # Modern responsive styling
+├── app.js              # Core application logic
+├── trainer.js          # Training pipeline implementation
+├── generator.js        # Image generation module
+├── utils.js            # Helper functions
+├── manifest.json       # PWA configuration
+└── README.md           # This file
+```
 
-### 📚 Model Management
-- **Model Library**: Browse and manage all your trained models
-- **Load/Export**: Load old models or export them to share with others
-- **Model Information**: View metadata including training date, trigger words, etc.
+## How It Works
 
-### ⚙️ Flexible Settings
-- **Multiple Base Models**: Choose from SD 1.5, SD 2.1, or SDXL
-- **GPU Acceleration**: Automatic CUDA detection and usage
-- **Customizable Parameters**: Adjust training steps, learning rate, image size
-- **Persistent Config**: Save your preferred settings
+### 1. Open the Website
+Simply navigate to the hosted URL or open `index.html` locally. No installation needed.
 
-## 📋 Requirements
+### 2. Upload Training Images
+- Drag and drop your image folder
+- Supported formats: JPG, PNG, WEBP
+- Minimum 5 images recommended for good results
 
-### Hardware
-- **Minimum**: 8GB RAM, CPU-only support
-- **Recommended**: 16GB+ RAM, NVIDIA GPU with 8GB+ VRAM
-- **Storage**: 10GB+ free space for models and training data
+### 3. Configure Training
+- Enter a unique trigger word (e.g., "myartstyle")
+- Adjust training parameters (steps, learning rate)
+- Preview preprocessed images
 
-### Software
-- Python 3.8 or higher
-- Tkinter (usually included with Python)
-- NVIDIA drivers (if using GPU)
+### 4. Train Model
+- Click "Start Training"
+- Watch real-time progress and loss graphs
+- Training runs entirely in your browser
 
-## 🛠️ Installation
+### 5. Generate & Export
+- Test your model with text prompts
+- Download the trained model file (.safetensors or .pt)
+- Save to your local machine or discard
 
-### Step 1: Clone or Download
+## Browser Requirements
+
+### Supported Browsers
+- ✅ Chrome 90+ (Recommended)
+- ✅ Edge 90+
+- ✅ Firefox 88+ (with WebAssembly support)
+- ⚠️ Safari 14+ (limited WebAssembly features)
+
+### System Requirements
+- **RAM**: Minimum 4GB (8GB recommended)
+- **GPU**: WebGL 2.0 support (optional but recommended)
+- **Storage**: Temporary browser storage (cleared on close)
+
+## Running Locally
+
+### Option 1: Direct File Open
 ```bash
-cd /workspace
+# Simply open in your browser
+open web-preview/index.html
 ```
 
-### Step 2: Create Virtual Environment (Recommended)
+### Option 2: Local Server (Recommended)
 ```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+# Using Python
+cd web-preview
+python -m http.server 8000
+
+# Using Node.js
+npx serve web-preview
 ```
 
-### Step 3: Install Dependencies
+Then navigate to `http://localhost:8000`
+
+## Deployment Options
+
+### Static Hosting (Free)
+Deploy to any static hosting service:
+- **Netlify**: Drag and drop the `web-preview` folder
+- **Vercel**: Connect GitHub repo or drag & drop
+- **GitHub Pages**: Push to gh-pages branch
+- **Cloudflare Pages**: Direct deployment
+
+### Self-Hosting
 ```bash
-pip install -r requirements.txt
+# Using Nginx
+sudo cp -r web-preview /var/www/html/webtrain
+sudo systemctl restart nginx
+
+# Access at: http://your-server/webtrain
 ```
 
-### Step 4: Run the Application
+## Security Considerations
+
+### What Stays Local
+- ✅ All uploaded images
+- ✅ Training data and intermediate files
+- ✅ Generated model weights
+- ✅ Generated images
+
+### What Gets Cleared on Close
+- 🗑️ IndexedDB temporary storage
+- 🗑️ In-memory model weights
+- 🗑️ Canvas buffers
+- 🗑️ Session history
+
+### User Control
+- Manual save required to keep models
+- Clear button to wipe all data immediately
+- No cookies or tracking scripts
+- No external API calls
+
+## Limitations
+
+### Browser-Based Constraints
+- Training speed depends on user's hardware
+- Large datasets (>100 images) may cause memory issues
+- Complex models require more powerful GPUs
+- Some mobile devices may have limited support
+
+### Compared to Desktop Version
+| Feature | Desktop App | Web Version |
+|---------|-------------|-------------|
+| Training Speed | Fast (native) | Moderate (browser) |
+| Max Dataset Size | Unlimited | ~50 images recommended |
+| Persistence | Permanent | Session-only |
+| Installation | Required | None |
+| Privacy | High | Maximum |
+| Accessibility | OS-specific | Any browser |
+
+## Future Enhancements
+
+### Planned Features
+- [ ] WebGPU support for faster training
+- [ ] Collaborative training sessions (WebRTC)
+- [ ] Model sharing marketplace (opt-in)
+- [ ] Advanced preprocessing filters
+- [ ] Batch generation mode
+- [ ] Style mixing between models
+- [ ] Mobile-optimized interface
+
+### Technical Improvements
+- [ ] WASM optimization for faster inference
+- [ ] Progressive Web App (PWA) offline support
+- [ ] Service worker caching
+- [ ] WebAssembly threads for parallel processing
+
+## Contributing
+
+This is an open-source project. Contributions welcome!
+
+### Development Setup
 ```bash
-python autotrain_ai.py
+git clone <repository-url>
+cd web-preview
+# Start development server
+npm install -g live-server
+live-server --port=8080
 ```
 
-## 📖 How to Use
+### Code Structure
+- `trainer.js`: Core training loop with LoRA implementation
+- `generator.js`: Diffusion model inference
+- `utils.js`: Image preprocessing and utilities
+- `app.js`: UI event handlers and state management
 
-### Training Your First Model
+## License
 
-1. **Launch the Application**
-   ```bash
-   python autotrain_ai.py
-   ```
+MIT License - Free to use, modify, and distribute.
 
-2. **Upload Images**
-   - Click "📁 Select Image Folder" in the Train tab
-   - Choose a folder containing your training images (JPG, PNG, WebP, BMP)
-   - Preview your images in the preview panel
-   - Recommended: 10-50 high-quality images for best results
+## Support
 
-3. **Label Your Images**
-   - Enter a unique **Trigger Word** (e.g., "myart", "customface")
-   - Set a **Description Template** (e.g., "a photo of {trigger}")
-   - This teaches the AI what your images represent
-
-4. **Configure Training**
-   - **Training Steps**: 500-2000 (more steps = better quality but slower)
-   - **Learning Rate**: Start with 1e-4
-   - **Image Size**: 512 (standard), 768, or 1024 (higher quality)
-
-5. **Start Training**
-   - Click "🚀 Start Training"
-   - Watch the progress bar and logs
-   - Training time varies (5-30 minutes typically)
-
-6. **Save & Export**
-   - Model automatically saves to `./models/` directory
-   - Appears in the Model Library tab
-   - Can be exported or used immediately
-
-### Generating Images
-
-1. **Go to Generate Tab**
-2. **Select Your Model** from the dropdown
-3. **Enter a Prompt** (include your trigger word!)
-   - Example: "a beautiful {myart} style landscape at sunset"
-4. **Adjust Settings** (optional)
-   - Number of images
-   - Guidance scale (creativity vs. prompt adherence)
-   - Inference steps
-5. **Click Generate** and wait for results
-6. **Save** your favorite images
-
-### Managing Models
-
-- **View Library**: See all trained models with metadata
-- **Load Model**: Import external LoRA files
-- **Use Model**: Activate a model for generation
-- **Export Model**: Copy model to another location
-- **Delete Model**: Remove unwanted models
-
-## 📁 Project Structure
-
-```
-/workspace/
-├── autotrain_ai.py      # Main application
-├── requirements.txt     # Python dependencies
-├── README.md           # This file
-├── models/             # Trained models directory
-│   ├── lora_custom_20240101_120000/
-│   │   ├── pytorch_lora_weights.safetensors
-│   │   └── metadata.json
-│   └── config.json
-└── config.json         # Application settings
-```
-
-## 🎓 Tips for Best Results
-
-### Training Data
-- **Quality over Quantity**: 15-30 high-quality images work better than 100 poor ones
-- **Consistency**: Keep lighting, angles, and style consistent
-- **Variety**: Include different poses, expressions, or perspectives
-- **Resolution**: Use images at least 512x512 pixels
-- **Format**: JPG or PNG preferred
-
-### Trigger Words
-- **Unique**: Use uncommon words or combinations
-- **Short**: 1-2 words work best
-- **Descriptive**: Make it related to your content
-- Examples: `myartstyle`, `cyberpunk2099`, `fantasyportrait`
-
-### Training Parameters
-- **Beginner**: 1000 steps, 1e-4 learning rate, 512 size
-- **Advanced**: 2000-3000 steps, 5e-5 learning rate, 768 size
-- **Fine Details**: Higher steps + lower learning rate
-
-## 🔧 Troubleshooting
-
-### Common Issues
-
-**"Missing required package" error**
-```bash
-pip install -r requirements.txt
-```
-
-**"No GPU detected" warning**
-- This is normal if you don't have an NVIDIA GPU
-- Training will work on CPU but will be slower
-
-**Out of Memory errors**
-- Reduce batch size in settings
-- Use smaller image sizes (512 instead of 768/1024)
-- Close other applications
-
-**Training seems stuck**
-- Check the log window for details
-- Large models may take time to download initially
-- Ensure you have enough disk space
-
-**Generated images don't match training**
-- Increase training steps
-- Make sure to use trigger word in prompts
-- Check that training images are high quality
-
-## 🤝 Contributing
-
-Contributions are welcome! Feel free to:
-- Report bugs
-- Suggest features
-- Submit pull requests
-- Improve documentation
-
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🙏 Acknowledgments
-
-- **Stable Diffusion** by Stability AI
-- **Diffusers** library by Hugging Face
-- **LoRA** technique by Microsoft Research
-- **PEFT** library by Hugging Face
-- All open-source contributors
-
-## 📞 Support
-
-For questions, issues, or suggestions:
-- Open an issue on GitHub
-- Check the troubleshooting section
-- Review the documentation
+For issues and feature requests, please open a GitHub issue.
 
 ---
 
-**Built with ❤️ for the AI community**
-
-*Empowering everyone to create custom AI models without coding!*
+**Note**: This web version complements the desktop application. Users who need maximum performance should use the desktop version, while those wanting quick, private, no-install access should use the web version.
