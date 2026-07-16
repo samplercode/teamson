@@ -1,0 +1,25 @@
+# AutoTrain AI - Requirements
+
+Required Python packages for AutoTrain AI:
+
+## Core Dependencies
+torch>=2.0.0
+torchvision>=0.15.0
+diffusers>=0.24.0
+transformers>=4.35.0
+accelerate>=0.24.0
+peft>=0.6.0
+Pillow>=10.0.0
+
+## Optional (for better performance)
+xformers>=0.0.22  # For faster attention on NVIDIA GPUs
+safetensors>=0.4.0  # For safe model loading
+
+## Installation
+pip install -r requirements.txt
+
+## Notes
+- CUDA support requires NVIDIA GPU with compatible drivers
+- For CPU-only usage, install torch without CUDA: pip install torch --index-url https://download.pytorch.org/whl/cpu
+- Minimum 8GB RAM recommended, 16GB+ for larger models
+- GPU with 8GB+ VRAM recommended for training
