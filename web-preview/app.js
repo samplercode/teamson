@@ -37,28 +37,54 @@ class WebTrainApp {
             btn.addEventListener('click', (e) => this.switchTab(e.target.dataset.tab));
         });
 
-        // File upload
-        const uploadArea = document.getElementById('uploadArea');
-        const fileInput = document.getElementById('fileInput');
+        // File upload - Image drop zone
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
 
-        uploadArea.addEventListener('click', () => fileInput.click());
-        fileInput.addEventListener('change', (e) => this.handleFileSelect(e));
+        if (dropZone && fileInput) {
+            dropZone.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', (e) => this.handleFileSelect(e));
 
-        // Drag and drop
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadArea.classList.add('dragover');
-        });
+            // Drag and drop
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('dragover');
+            });
 
-        uploadArea.addEventListener('dragleave', () => {
-            uploadArea.classList.remove('dragover');
-        });
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('dragover');
+            });
 
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadArea.classList.remove('dragover');
-            this.handleFileDrop(e);
-        });
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+                this.handleFileDrop(e);
+            });
+        }
+
+        // Data file drop zone (for CSV/Parquet)
+        const dataDropZone = document.getElementById('data-drop-zone');
+        const dataFileInput = document.getElementById('data-file-input');
+
+        if (dataDropZone && dataFileInput) {
+            dataDropZone.addEventListener('click', () => dataFileInput.click());
+            dataFileInput.addEventListener('change', (e) => this.handleDataFileSelect(e));
+
+            dataDropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dataDropZone.classList.add('dragover');
+            });
+
+            dataDropZone.addEventListener('dragleave', () => {
+                dataDropZone.classList.remove('dragover');
+            });
+
+            dataDropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dataDropZone.classList.remove('dragover');
+                this.handleDataFileDrop(e);
+            });
+        }
 
         // Training controls
         document.getElementById('startTrainBtn').addEventListener('click', () => this.startTraining());
@@ -128,47 +154,113 @@ class WebTrainApp {
     /**
      * Handle file selection
      */
-    handleFileSelect(event) {
+    async handleFileSelect(event) {
         const files = Array.from(event.target.files);
-        this.addTrainingImages(files);
+        await this.addTrainingImages(files);
     }
 
     /**
      * Handle file drop
      */
-    handleFileDrop(event) {
+    async handleFileDrop(event) {
         const files = Array.from(event.dataTransfer.files);
-        this.addTrainingImages(files);
+        await this.addTrainingImages(files);
     }
 
     /**
-     * Add training images
+     * Add training images and data files
      */
     async addTrainingImages(files) {
         const validation = this.trainer.validateImages(files);
         
-        if (!validation.isValid && this.trainingImages.length + validation.valid.length < 5) {
-            utils.showToast('Please upload at least 5 valid images', 'error');
-        }
-
-        validation.errors.forEach(error => {
-            utils.showToast(error, 'warning');
-        });
-
-        for (const file of validation.valid) {
+        // Check if we have data files (CSV, JSON, Parquet)
+        const dataFiles = files.filter(f => 
+            f.name.endsWith('.csv') || f.name.endsWith('.json') || f.name.endsWith('.parquet')
+        );
+        
+        const imageFiles = files.filter(f => 
+            !f.name.endsWith('.csv') && !f.name.endsWith('.json') && !f.name.endsWith('.parquet')
+        );
+        
+        // Process data files first
+        for (const dataFile of dataFiles) {
             try {
-                const resizedBlob = await utils.resizeImage(file);
-                const base64 = await utils.fileToBase64(resizedBlob);
+                let imageData = [];
                 
-                this.trainingImages.push({
-                    id: utils.generateId(),
-                    file: file,
-                    preview: base64,
-                    name: file.name
-                });
+                if (dataFile.name.endsWith('.csv')) {
+                    imageData = await this.trainer.parseCSV(dataFile);
+                } else if (dataFile.name.endsWith('.json')) {
+                    imageData = await this.trainer.parseJSON(dataFile);
+                } else if (dataFile.name.endsWith('.parquet')) {
+                    imageData = await this.trainer.parseParquet(dataFile);
+                }
+                
+                // Show loading indicator
+                utils.showToast(`Processing ${imageData.length} entries from ${dataFile.name}...`, 'success');
+                
+                // Add each entry from the data file
+                let loadedCount = 0;
+                for (const item of imageData) {
+                    // Process image source (could be URL, base64, or path)
+                    const processedImage = await this.trainer.processImageSource(item.path, item.label);
+                    
+                    if (processedImage) {
+                        this.trainingImages.push({
+                            id: utils.generateId(),
+                            file: null,
+                            preview: processedImage.preview,
+                            imageUrl: processedImage.url,
+                            name: item.path.split('/').pop() || item.path,
+                            label: processedImage.label || item.label,
+                            dataSource: dataFile.name,
+                            sourceType: item.source,
+                            isEmbedded: processedImage.isEmbedded,
+                            status: processedImage.preview ? 'loaded' : 'reference'
+                        });
+                        loadedCount++;
+                    }
+                }
+                
+                utils.showToast(`Loaded ${loadedCount}/${imageData.length} entries from ${dataFile.name}`, loadedCount > 0 ? 'success' : 'warning');
             } catch (error) {
-                console.error('Error processing image:', error);
-                utils.showToast(`Failed to process ${file.name}`, 'error');
+                console.error('Error processing data file:', error);
+                utils.showToast(`Failed to process ${dataFile.name}: ${error.message}`, 'error');
+            }
+        }
+        
+        // Validate and process image files
+        if (imageFiles.length > 0) {
+            const imageValidation = this.trainer.validateImages(imageFiles);
+            
+            if (!imageValidation.isValid && this.trainingImages.length + imageValidation.valid.length < 5) {
+                utils.showToast('Please upload at least 5 valid images', 'error');
+            }
+
+            imageValidation.errors.forEach(error => {
+                utils.showToast(error, 'warning');
+            });
+
+            for (const file of imageValidation.valid) {
+                try {
+                    const resizedBlob = await utils.resizeImage(file);
+                    const base64 = await utils.fileToBase64(resizedBlob);
+                    
+                    // Extract image name without extension as the label
+                    const imageName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+                    
+                    this.trainingImages.push({
+                        id: utils.generateId(),
+                        file: file,
+                        preview: base64,
+                        name: file.name,
+                        label: imageName,
+                        isEmbedded: true,
+                        status: 'loaded'
+                    });
+                } catch (error) {
+                    console.error('Error processing image:', error);
+                    utils.showToast(`Failed to process ${file.name}`, 'error');
+                }
             }
         }
 
@@ -176,7 +268,7 @@ class WebTrainApp {
     }
 
     /**
-     * Update image preview
+     * Update image preview with cleaner UI
      */
     updateImagePreview() {
         const previewContainer = document.getElementById('imagePreview');
@@ -192,10 +284,60 @@ class WebTrainApp {
         this.trainingImages.forEach((img, index) => {
             const item = document.createElement('div');
             item.className = 'preview-item';
-            item.innerHTML = `
-                <img src="${img.preview}" alt="${img.name}">
-                <button class="remove-btn" onclick="app.removeImage(${index})">×</button>
-            `;
+            
+            // Determine display based on image status
+            const hasPreview = img.preview && img.preview.startsWith('data:image');
+            const isReference = !hasPreview && img.imageUrl;
+            const isLoading = img.status === 'loading';
+            
+            if (hasPreview) {
+                // Embedded image (direct upload or successfully fetched URL)
+                item.innerHTML = `
+                    <div class="preview-image-wrapper">
+                        <img src="${img.preview}" alt="${img.name}" loading="lazy">
+                        ${!img.isEmbedded ? '<span class="badge badge-remote">Remote</span>' : ''}
+                    </div>
+                    <div class="preview-info">
+                        <span class="label" title="${img.label || ''}">${img.label || 'Untitled'}</span>
+                        <span class="source-badge">${img.dataSource ? 'CSV/JSON' : 'Upload'}</span>
+                    </div>
+                    <button class="remove-btn" onclick="app.removeImage(${index})" title="Remove">×</button>
+                `;
+            } else if (isReference) {
+                // Reference to external image (couldn't fetch, showing as link)
+                item.innerHTML = `
+                    <div class="data-preview">
+                        <div class="image-placeholder">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                <circle cx="8.5" cy="8.5" r="1.5"/>
+                                <polyline points="21 15 16 10 5 21"/>
+                            </svg>
+                        </div>
+                        <div class="preview-info">
+                            <span class="name" title="${img.name}">${img.name}</span>
+                            <span class="label">${img.label || 'No caption'}</span>
+                            <span class="status-badge status-reference">External Link</span>
+                        </div>
+                    </div>
+                    <button class="remove-btn" onclick="app.removeImage(${index})" title="Remove">×</button>
+                `;
+            } else {
+                // Unknown state or loading
+                item.innerHTML = `
+                    <div class="data-preview">
+                        <div class="image-placeholder">
+                            ${isLoading ? '<div class="spinner"></div>' : '<span>📊</span>'}
+                        </div>
+                        <div class="preview-info">
+                            <span class="name">${img.name}</span>
+                            <span class="label">${img.label || 'Processing...'}</span>
+                        </div>
+                    </div>
+                    <button class="remove-btn" onclick="app.removeImage(${index})" title="Remove">×</button>
+                `;
+            }
+            
             previewContainer.appendChild(item);
         });
     }

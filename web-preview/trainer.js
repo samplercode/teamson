@@ -1,219 +1,276 @@
-// Trainer module for WebTrain AI
-// Implements browser-based LoRA training simulation
-
+// Trainer class with data file parsing capabilities
 class ModelTrainer {
     constructor() {
-        this.isTraining = false;
-        this.currentStep = 0;
-        this.totalSteps = 0;
-        this.losses = [];
         this.onProgress = null;
         this.onComplete = null;
         this.onError = null;
+        this.isTraining = false;
     }
 
     /**
-     * Start training process
+     * Validate uploaded images
      */
-    async train(images, triggerWord, config) {
-        if (this.isTraining) {
-            throw new Error('Training already in progress');
+    validateImages(files) {
+        const valid = [];
+        const errors = [];
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+        
+        for (const file of files) {
+            if (allowedTypes.includes(file.type)) {
+                valid.push(file);
+            } else {
+                errors.push(`Invalid file type: ${file.name}`);
+            }
         }
+        
+        return { isValid: valid.length > 0, valid, errors };
+    }
 
-        if (!images || images.length === 0) {
-            throw new Error('No training images provided');
+    /**
+     * Parse CSV file and extract image data
+     */
+    async parseCSV(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const text = e.target.result;
+                    const lines = text.split('\n').filter(line => line.trim());
+                    if (lines.length < 2) {
+                        resolve([]);
+                        return;
+                    }
+                    
+                    const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+                    const imageData = [];
+                    
+                    for (let i = 1; i < lines.length; i++) {
+                        const values = this.parseCSVLine(lines[i]);
+                        if (values.length === headers.length) {
+                            const entry = {};
+                            headers.forEach((header, idx) => {
+                                entry[header.toLowerCase()] = values[idx];
+                            });
+                            
+                            // Handle different column names for image and label
+                            const imageUrl = entry['image'] || entry['image_url'] || entry['path'] || entry['url'] || '';
+                            const label = entry['caption'] || entry['text'] || entry['prompt'] || entry['label'] || '';
+                            
+                            if (imageUrl) {
+                                imageData.push({
+                                    path: imageUrl,
+                                    label: label,
+                                    source: 'csv'
+                                });
+                            }
+                        }
+                    }
+                    
+                    resolve(imageData);
+                } catch (error) {
+                    reject(error);
+                }
+            };
+            reader.onerror = reject;
+            reader.readAsText(file);
+        });
+    }
+
+    /**
+     * Parse a single CSV line handling quoted values
+     */
+    parseCSVLine(line) {
+        const values = [];
+        let current = '';
+        let inQuotes = false;
+        
+        for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+            if (char === '"') {
+                inQuotes = !inQuotes;
+            } else if (char === ',' && !inQuotes) {
+                values.push(current.trim().replace(/^"|"$/g, ''));
+                current = '';
+            } else {
+                current += char;
+            }
         }
+        values.push(current.trim().replace(/^"|"$/g, ''));
+        return values;
+    }
 
-        if (!triggerWord || triggerWord.trim() === '') {
-            throw new Error('Trigger word is required');
-        }
+    /**
+     * Parse JSON file and extract image data
+     */
+    async parseJSON(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    const imageData = [];
+                    
+                    // Handle array of objects
+                    const items = Array.isArray(data) ? data : (data.data || data.images || []);
+                    
+                    for (const item of items) {
+                        const imageUrl = item.image || item.image_url || item.path || item.url || '';
+                        const label = item.caption || item.text || item.prompt || item.label || '';
+                        
+                        if (imageUrl) {
+                            imageData.push({
+                                path: imageUrl,
+                                label: label,
+                                source: 'json'
+                            });
+                        }
+                    }
+                    
+                    resolve(imageData);
+                } catch (error) {
+                    reject(error);
+                }
+            };
+            reader.onerror = reject;
+            reader.readAsText(file);
+        });
+    }
 
-        this.isTraining = true;
-        this.currentStep = 0;
-        this.totalSteps = config.steps || 500;
-        this.losses = [];
+    /**
+     * Parse Parquet file (simplified - expects WASM module)
+     */
+    async parseParquet(file) {
+        // For browser-based parquet parsing, we'll use a simple approach
+        // In production, you'd use a library like parquet-wasm
+        console.warn('Parquet parsing requires parquet-wasm module. Treating as binary.');
+        
+        // Try to read as text first (for small test files)
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    // Attempt to parse if it's actually a text-based format
+                    const text = e.target.result;
+                    if (text.startsWith('{') || text.startsWith('[')) {
+                        // It's JSON
+                        return this.parseJSON(file).then(resolve).catch(reject);
+                    }
+                    // Otherwise return empty - proper parquet needs WASM
+                    resolve([]);
+                } catch (error) {
+                    resolve([]); // Return empty for binary parquet
+                }
+            };
+            reader.onerror = () => resolve([]);
+            reader.readAsText(file);
+        });
+    }
 
+    /**
+     * Process image from various sources (URL, base64, blob)
+     */
+    async processImageSource(imageSrc, label = '') {
         try {
-            // Initialize training
+            // Check if it's a base64 encoded image
+            if (imageSrc.startsWith('data:image')) {
+                return {
+                    preview: imageSrc,
+                    label: label,
+                    isEmbedded: true
+                };
+            }
+            
+            // Check if it's a URL
+            if (imageSrc.startsWith('http://') || imageSrc.startsWith('https://')) {
+                // Try to fetch and convert to base64
+                try {
+                    const response = await fetch(imageSrc, { mode: 'cors' });
+                    const blob = await response.blob();
+                    const base64 = await utils.fileToBase64(blob);
+                    return {
+                        preview: base64,
+                        label: label,
+                        isEmbedded: false
+                    };
+                } catch (fetchError) {
+                    // CORS error or network issue - store as URL reference
+                    return {
+                        preview: null,
+                        label: label,
+                        url: imageSrc,
+                        isEmbedded: false
+                    };
+                }
+            }
+            
+            // Local path or relative URL - store as reference
+            return {
+                preview: null,
+                label: label,
+                url: imageSrc,
+                isEmbedded: false
+            };
+        } catch (error) {
+            console.error('Error processing image source:', error);
+            return null;
+        }
+    }
+
+    /**
+     * Train model (stub implementation)
+     */
+    async train(images, triggerWord, options) {
+        this.isTraining = true;
+        const steps = options.steps || 100;
+        
+        for (let i = 0; i < steps && this.isTraining; i++) {
+            await new Promise(resolve => setTimeout(resolve, 50));
+            
             if (this.onProgress) {
                 this.onProgress({
-                    step: 0,
-                    total: this.totalSteps,
-                    percent: 0,
-                    loss: 0,
-                    status: 'Initializing model...'
+                    percent: ((i + 1) / steps) * 100,
+                    status: `Training step ${i + 1}/${steps}`,
+                    losses: Array.from({ length: i + 1 }, (_, j) => Math.exp(-j * 0.1) * (0.5 + Math.random() * 0.1))
                 });
             }
-
-            // Simulate training process with progressive loss reduction
-            const learningRate = parseFloat(config.learningRate) || 0.0005;
-            const batchSize = config.batchSize || 2;
-            
-            // Initial loss (simulated)
-            let currentLoss = 1.0 + Math.random() * 0.5;
-
-            for (let step = 1; step <= this.totalSteps; step++) {
-                if (!this.isTraining) {
-                    throw new Error('Training cancelled by user');
-                }
-
-                this.currentStep = step;
-
-                // Simulate loss calculation with gradual decrease
-                const decay = Math.exp(-learningRate * step * 0.1);
-                const noise = (Math.random() - 0.5) * 0.1;
-                currentLoss = Math.max(0.01, currentLoss * decay + noise);
-                
-                this.losses.push(currentLoss);
-
-                // Report progress every 10 steps or at completion
-                if (step % 10 === 0 || step === this.totalSteps) {
-                    const percent = ((step / this.totalSteps) * 100).toFixed(1);
-                    
-                    if (this.onProgress) {
-                        this.onProgress({
-                            step: step,
-                            total: this.totalSteps,
-                            percent: parseFloat(percent),
-                            loss: currentLoss,
-                            losses: [...this.losses],
-                            status: `Training step ${step}/${this.totalSteps}`
-                        });
-                    }
-
-                    // Allow UI to update
-                    await this.sleep(50);
-                }
-
-                // Simulate training time per step
-                await this.sleep(100);
-            }
-
-            // Training complete
-            const modelData = await this.generateModelData(triggerWord, config);
-
-            if (this.onComplete) {
-                this.onComplete({
-                    model: modelData,
-                    finalLoss: currentLoss,
-                    totalSteps: this.totalSteps,
-                    losses: this.losses
-                });
-            }
-
-            return modelData;
-
-        } catch (error) {
-            if (this.onError) {
-                this.onError(error);
-            }
-            throw error;
-        } finally {
-            this.isTraining = false;
         }
+        
+        if (this.isTraining && this.onComplete) {
+            this.onComplete({
+                model: {
+                    id: utils.generateId(),
+                    name: triggerWord,
+                    created: new Date().toISOString(),
+                    weights: new Float32Array(100)
+                }
+            });
+        }
+        
+        this.isTraining = false;
     }
 
     /**
-     * Cancel ongoing training
+     * Cancel training
      */
     cancel() {
         this.isTraining = false;
     }
-
-    /**
-     * Generate mock model data for export
-     */
-    async generateModelData(triggerWord, config) {
-        const modelId = utils.generateId();
-        const timestamp = new Date().toISOString();
-        
-        // Create a simulated model file (in real implementation, this would be actual weights)
-        const modelContent = {
-            metadata: {
-                format: 'lora',
-                version: '1.0',
-                triggerWord: triggerWord,
-                baseModel: 'stable-diffusion-v1.5',
-                trainingSteps: this.totalSteps,
-                learningRate: config.learningRate,
-                batchSize: config.batchSize,
-                trainedAt: timestamp,
-                finalLoss: this.losses[this.losses.length - 1]
-            },
-            // Simulated weight data (placeholder)
-            weights: {
-                type: 'mock',
-                size: Math.floor(Math.random() * 50000000) + 10000000,
-                checksum: utils.generateId()
-            }
-        };
-
-        // Create blob for download
-        const blob = new Blob([JSON.stringify(modelContent, null, 2)], {
-            type: 'application/json'
-        });
-
-        return {
-            id: modelId,
-            name: `${triggerWord}_lora`,
-            triggerWord: triggerWord,
-            createdAt: timestamp,
-            trainingSteps: this.totalSteps,
-            finalLoss: this.losses[this.losses.length - 1],
-            fileSize: blob.size,
-            blob: blob,
-            preview: config.previewImage || null,
-            config: config
-        };
-    }
-
-    /**
-     * Sleep helper
-     */
-    sleep(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
-
-    /**
-     * Load existing model
-     */
-    async loadModel(modelData) {
-        // In real implementation, this would load actual weights
-        return {
-            success: true,
-            model: modelData
-        };
-    }
-
-    /**
-     * Validate training images
-     */
-    validateImages(files) {
-        const validFormats = ['image/jpeg', 'image/png', 'image/webp'];
-        const validFiles = [];
-        const errors = [];
-
-        for (const file of files) {
-            if (!validFormats.includes(file.type)) {
-                errors.push(`Invalid format: ${file.name}`);
-                continue;
-            }
-
-            if (file.size > 10 * 1024 * 1024) { // 10MB limit
-                errors.push(`File too large: ${file.name}`);
-                continue;
-            }
-
-            validFiles.push(file);
-        }
-
-        return {
-            valid: validFiles,
-            errors: errors,
-            isValid: validFiles.length >= 5
-        };
-    }
 }
 
-// Export trainer
-window.ModelTrainer = ModelTrainer;
+class ImageGenerator {
+    constructor() {}
+
+    async generate(prompt, options) {
+        // Stub implementation - returns placeholder
+        return {
+            image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMWUyOTNiIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiNmOGZhZmMiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5HZW5lcmF0ZWQ8L3RleHQ+PC9zdmc+'
+        };
+    }
+
+    downloadImage(imageDataUrl) {
+        const link = document.createElement('a');
+        link.download = `generated-${Date.now()}.png`;
+        link.href = imageDataUrl;
+        link.click();
+    }
+}
