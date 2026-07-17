@@ -128,47 +128,98 @@ class WebTrainApp {
     /**
      * Handle file selection
      */
-    handleFileSelect(event) {
+    async handleFileSelect(event) {
         const files = Array.from(event.target.files);
-        this.addTrainingImages(files);
+        await this.addTrainingImages(files);
     }
 
     /**
      * Handle file drop
      */
-    handleFileDrop(event) {
+    async handleFileDrop(event) {
         const files = Array.from(event.dataTransfer.files);
-        this.addTrainingImages(files);
+        await this.addTrainingImages(files);
     }
 
     /**
-     * Add training images
+     * Add training images and data files
      */
     async addTrainingImages(files) {
         const validation = this.trainer.validateImages(files);
         
-        if (!validation.isValid && this.trainingImages.length + validation.valid.length < 5) {
-            utils.showToast('Please upload at least 5 valid images', 'error');
-        }
-
-        validation.errors.forEach(error => {
-            utils.showToast(error, 'warning');
-        });
-
-        for (const file of validation.valid) {
+        // Check if we have data files (CSV, JSON, Parquet)
+        const dataFiles = files.filter(f => 
+            f.name.endsWith('.csv') || f.name.endsWith('.json') || f.name.endsWith('.parquet')
+        );
+        
+        const imageFiles = files.filter(f => 
+            !f.name.endsWith('.csv') && !f.name.endsWith('.json') && !f.name.endsWith('.parquet')
+        );
+        
+        // Process data files first
+        for (const dataFile of dataFiles) {
             try {
-                const resizedBlob = await utils.resizeImage(file);
-                const base64 = await utils.fileToBase64(resizedBlob);
+                let imageData = [];
                 
-                this.trainingImages.push({
-                    id: utils.generateId(),
-                    file: file,
-                    preview: base64,
-                    name: file.name
-                });
+                if (dataFile.name.endsWith('.csv')) {
+                    imageData = await this.trainer.parseCSV(dataFile);
+                } else if (dataFile.name.endsWith('.json')) {
+                    imageData = await this.trainer.parseJSON(dataFile);
+                } else if (dataFile.name.endsWith('.parquet')) {
+                    imageData = await this.trainer.parseParquet(dataFile);
+                }
+                
+                // Add each entry from the data file
+                for (const item of imageData) {
+                    this.trainingImages.push({
+                        id: utils.generateId(),
+                        file: null,  // Data file entry, no actual file
+                        preview: null,
+                        name: item.path,
+                        label: item.label,
+                        dataSource: dataFile.name,
+                        sourceType: item.source
+                    });
+                }
+                
+                utils.showToast(`Loaded ${imageData.length} entries from ${dataFile.name}`, 'success');
             } catch (error) {
-                console.error('Error processing image:', error);
-                utils.showToast(`Failed to process ${file.name}`, 'error');
+                console.error('Error processing data file:', error);
+                utils.showToast(`Failed to process ${dataFile.name}: ${error.message}`, 'error');
+            }
+        }
+        
+        // Validate and process image files
+        if (imageFiles.length > 0) {
+            const imageValidation = this.trainer.validateImages(imageFiles);
+            
+            if (!imageValidation.isValid && this.trainingImages.length + imageValidation.valid.length < 5) {
+                utils.showToast('Please upload at least 5 valid images', 'error');
+            }
+
+            imageValidation.errors.forEach(error => {
+                utils.showToast(error, 'warning');
+            });
+
+            for (const file of imageValidation.valid) {
+                try {
+                    const resizedBlob = await utils.resizeImage(file);
+                    const base64 = await utils.fileToBase64(resizedBlob);
+                    
+                    // Extract image name without extension as the label
+                    const imageName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+                    
+                    this.trainingImages.push({
+                        id: utils.generateId(),
+                        file: file,
+                        preview: base64,
+                        name: file.name,
+                        label: imageName  // Use filename (without extension) as label
+                    });
+                } catch (error) {
+                    console.error('Error processing image:', error);
+                    utils.showToast(`Failed to process ${file.name}`, 'error');
+                }
             }
         }
 
@@ -192,10 +243,32 @@ class WebTrainApp {
         this.trainingImages.forEach((img, index) => {
             const item = document.createElement('div');
             item.className = 'preview-item';
-            item.innerHTML = `
-                <img src="${img.preview}" alt="${img.name}">
-                <button class="remove-btn" onclick="app.removeImage(${index})">×</button>
-            `;
+            
+            // Handle data file entries differently from image files
+            if (img.preview) {
+                // Regular image file
+                item.innerHTML = `
+                    <img src="${img.preview}" alt="${img.name}">
+                    <div class="preview-info">
+                        <span class="label">${img.label}</span>
+                    </div>
+                    <button class="remove-btn" onclick="app.removeImage(${index})">×</button>
+                `;
+            } else {
+                // Data file entry (CSV, JSON, Parquet)
+                item.innerHTML = `
+                    <div class="data-preview">
+                        <span class="data-icon">📊</span>
+                        <div class="preview-info">
+                            <span class="name">${img.name}</span>
+                            <span class="label">${img.label || 'No label'}</span>
+                            <span class="source">${img.dataSource || img.sourceType}</span>
+                        </div>
+                    </div>
+                    <button class="remove-btn" onclick="app.removeImage(${index})">×</button>
+                `;
+            }
+            
             previewContainer.appendChild(item);
         });
     }
