@@ -169,20 +169,33 @@ class WebTrainApp {
                     imageData = await this.trainer.parseParquet(dataFile);
                 }
                 
+                // Show loading indicator
+                utils.showToast(`Processing ${imageData.length} entries from ${dataFile.name}...`, 'success');
+                
                 // Add each entry from the data file
+                let loadedCount = 0;
                 for (const item of imageData) {
-                    this.trainingImages.push({
-                        id: utils.generateId(),
-                        file: null,  // Data file entry, no actual file
-                        preview: null,
-                        name: item.path,
-                        label: item.label,
-                        dataSource: dataFile.name,
-                        sourceType: item.source
-                    });
+                    // Process image source (could be URL, base64, or path)
+                    const processedImage = await this.trainer.processImageSource(item.path, item.label);
+                    
+                    if (processedImage) {
+                        this.trainingImages.push({
+                            id: utils.generateId(),
+                            file: null,
+                            preview: processedImage.preview,
+                            imageUrl: processedImage.url,
+                            name: item.path.split('/').pop() || item.path,
+                            label: processedImage.label || item.label,
+                            dataSource: dataFile.name,
+                            sourceType: item.source,
+                            isEmbedded: processedImage.isEmbedded,
+                            status: processedImage.preview ? 'loaded' : 'reference'
+                        });
+                        loadedCount++;
+                    }
                 }
                 
-                utils.showToast(`Loaded ${imageData.length} entries from ${dataFile.name}`, 'success');
+                utils.showToast(`Loaded ${loadedCount}/${imageData.length} entries from ${dataFile.name}`, loadedCount > 0 ? 'success' : 'warning');
             } catch (error) {
                 console.error('Error processing data file:', error);
                 utils.showToast(`Failed to process ${dataFile.name}: ${error.message}`, 'error');
@@ -214,7 +227,9 @@ class WebTrainApp {
                         file: file,
                         preview: base64,
                         name: file.name,
-                        label: imageName  // Use filename (without extension) as label
+                        label: imageName,
+                        isEmbedded: true,
+                        status: 'loaded'
                     });
                 } catch (error) {
                     console.error('Error processing image:', error);
@@ -227,7 +242,7 @@ class WebTrainApp {
     }
 
     /**
-     * Update image preview
+     * Update image preview with cleaner UI
      */
     updateImagePreview() {
         const previewContainer = document.getElementById('imagePreview');
@@ -244,28 +259,56 @@ class WebTrainApp {
             const item = document.createElement('div');
             item.className = 'preview-item';
             
-            // Handle data file entries differently from image files
-            if (img.preview) {
-                // Regular image file
+            // Determine display based on image status
+            const hasPreview = img.preview && img.preview.startsWith('data:image');
+            const isReference = !hasPreview && img.imageUrl;
+            const isLoading = img.status === 'loading';
+            
+            if (hasPreview) {
+                // Embedded image (direct upload or successfully fetched URL)
                 item.innerHTML = `
-                    <img src="${img.preview}" alt="${img.name}">
-                    <div class="preview-info">
-                        <span class="label">${img.label}</span>
+                    <div class="preview-image-wrapper">
+                        <img src="${img.preview}" alt="${img.name}" loading="lazy">
+                        ${!img.isEmbedded ? '<span class="badge badge-remote">Remote</span>' : ''}
                     </div>
-                    <button class="remove-btn" onclick="app.removeImage(${index})">×</button>
+                    <div class="preview-info">
+                        <span class="label" title="${img.label || ''}">${img.label || 'Untitled'}</span>
+                        <span class="source-badge">${img.dataSource ? 'CSV/JSON' : 'Upload'}</span>
+                    </div>
+                    <button class="remove-btn" onclick="app.removeImage(${index})" title="Remove">×</button>
                 `;
-            } else {
-                // Data file entry (CSV, JSON, Parquet)
+            } else if (isReference) {
+                // Reference to external image (couldn't fetch, showing as link)
                 item.innerHTML = `
                     <div class="data-preview">
-                        <span class="data-icon">📊</span>
+                        <div class="image-placeholder">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                <circle cx="8.5" cy="8.5" r="1.5"/>
+                                <polyline points="21 15 16 10 5 21"/>
+                            </svg>
+                        </div>
                         <div class="preview-info">
-                            <span class="name">${img.name}</span>
-                            <span class="label">${img.label || 'No label'}</span>
-                            <span class="source">${img.dataSource || img.sourceType}</span>
+                            <span class="name" title="${img.name}">${img.name}</span>
+                            <span class="label">${img.label || 'No caption'}</span>
+                            <span class="status-badge status-reference">External Link</span>
                         </div>
                     </div>
-                    <button class="remove-btn" onclick="app.removeImage(${index})">×</button>
+                    <button class="remove-btn" onclick="app.removeImage(${index})" title="Remove">×</button>
+                `;
+            } else {
+                // Unknown state or loading
+                item.innerHTML = `
+                    <div class="data-preview">
+                        <div class="image-placeholder">
+                            ${isLoading ? '<div class="spinner"></div>' : '<span>📊</span>'}
+                        </div>
+                        <div class="preview-info">
+                            <span class="name">${img.name}</span>
+                            <span class="label">${img.label || 'Processing...'}</span>
+                        </div>
+                    </div>
+                    <button class="remove-btn" onclick="app.removeImage(${index})" title="Remove">×</button>
                 `;
             }
             

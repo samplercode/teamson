@@ -203,7 +203,7 @@ body {
     justify-content: center;
 }
 
-/* Data file preview in training set */
+/* Enhanced Data file preview in training set */
 .preview-item .data-preview {
     width: 100%;
     height: 100%;
@@ -213,6 +213,22 @@ body {
     justify-content: center;
     background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
     padding: 10px;
+    position: relative;
+}
+
+.preview-item .image-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 8px;
+    margin-bottom: 8px;
+}
+
+.preview-item .image-placeholder svg {
+    stroke: #64748b;
 }
 
 .preview-item .data-icon {
@@ -225,26 +241,111 @@ body {
     flex-direction: column;
     gap: 4px;
     text-align: center;
+    width: 100%;
 }
 
 .preview-item .preview-info .name {
-    font-size: 11px;
+    font-size: 10px;
     color: #64748b;
     font-weight: 500;
     word-break: break-word;
+    line-height: 1.2;
+    max-height: 24px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
 }
 
 .preview-item .preview-info .label {
-    font-size: 12px;
+    font-size: 11px;
     color: #1e293b;
     font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .preview-item .preview-info .source {
-    font-size: 10px;
+    font-size: 9px;
     color: #94a3b8;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+}
+
+/* Image preview wrapper with badges */
+.preview-item .preview-image-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.preview-item .preview-image-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.preview-item:hover .preview-image-wrapper img {
+    transform: scale(1.1);
+}
+
+.preview-item .badge {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    backdrop-filter: blur(4px);
+}
+
+.preview-item .badge-remote {
+    background: rgba(139, 92, 246, 0.9);
+    color: white;
+}
+
+.preview-item .source-badge {
+    font-size: 9px;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 2px;
+}
+
+/* Status badges */
+.preview-item .status-badge {
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+    margin-top: 4px;
+}
+
+.preview-item .status-reference {
+    background: rgba(245, 158, 11, 0.2);
+    color: #f59e0b;
+}
+
+/* Loading spinner */
+.preview-item .spinner {
+    width: 24px;
+    height: 24px;
+    border: 3px solid rgba(99, 102, 241, 0.2);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
 }
 
 /* Stats */
