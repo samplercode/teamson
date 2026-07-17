@@ -37,28 +37,54 @@ class WebTrainApp {
             btn.addEventListener('click', (e) => this.switchTab(e.target.dataset.tab));
         });
 
-        // File upload
-        const uploadArea = document.getElementById('uploadArea');
-        const fileInput = document.getElementById('fileInput');
+        // File upload - Image drop zone
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
 
-        uploadArea.addEventListener('click', () => fileInput.click());
-        fileInput.addEventListener('change', (e) => this.handleFileSelect(e));
+        if (dropZone && fileInput) {
+            dropZone.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', (e) => this.handleFileSelect(e));
 
-        // Drag and drop
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadArea.classList.add('dragover');
-        });
+            // Drag and drop
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('dragover');
+            });
 
-        uploadArea.addEventListener('dragleave', () => {
-            uploadArea.classList.remove('dragover');
-        });
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('dragover');
+            });
 
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadArea.classList.remove('dragover');
-            this.handleFileDrop(e);
-        });
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+                this.handleFileDrop(e);
+            });
+        }
+
+        // Data file drop zone (for CSV/Parquet)
+        const dataDropZone = document.getElementById('data-drop-zone');
+        const dataFileInput = document.getElementById('data-file-input');
+
+        if (dataDropZone && dataFileInput) {
+            dataDropZone.addEventListener('click', () => dataFileInput.click());
+            dataFileInput.addEventListener('change', (e) => this.handleDataFileSelect(e));
+
+            dataDropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dataDropZone.classList.add('dragover');
+            });
+
+            dataDropZone.addEventListener('dragleave', () => {
+                dataDropZone.classList.remove('dragover');
+            });
+
+            dataDropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dataDropZone.classList.remove('dragover');
+                this.handleDataFileDrop(e);
+            });
+        }
 
         // Training controls
         document.getElementById('startTrainBtn').addEventListener('click', () => this.startTraining());
