@@ -1,12 +1,1 @@
-```
-# Virtual Environment
-venv/
-
-# Python compiled files
-*.pyc
-__pycache__/
-
-# Logs
-*.log
-
-```
+(empty)
