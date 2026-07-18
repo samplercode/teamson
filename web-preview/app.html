@@ -255,6 +255,21 @@
                 <input type="text" id="trigger-word" placeholder="e.g., ohwx man">
             </div>
 
+            <div class="control-group">
+                <label>Training Mode</label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <button type="button" id="mode-stabilized" class="secondary" onclick="selectTrainingMode('stabilized')" style="border-color: var(--accent); background: rgba(59, 130, 246, 0.1);">
+                        <div style="font-weight: 600; font-size: 0.85rem;">Stabilized</div>
+                        <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;">Base model + Text Encoder<br>Best for 5-20 images</div>
+                    </button>
+                    <button type="button" id="mode-scratch" class="secondary" onclick="selectTrainingMode('scratch')">
+                        <div style="font-weight: 600; font-size: 0.85rem;">From Scratch</div>
+                        <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;">Full UNet + Text Encoder<br>Best for 20+ images</div>
+                    </button>
+                </div>
+                <input type="hidden" id="training-mode" value="stabilized">
+            </div>
+
             <div class="stat-grid">
                 <div class="stat-card">
                     <div class="stat-val" id="steps-display">0</div>
@@ -272,6 +287,15 @@
                     <option value="0.0001">0.0001 (Slow, Stable)</option>
                     <option value="0.0005" selected>0.0005 (Balanced)</option>
                     <option value="0.001">0.001 (Fast, Risk of Overfit)</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label>Components to Train</label>
+                <select id="train-components">
+                    <option value="text-encoder">Text Encoder Only (Stabilized)</option>
+                    <option value="unet">UNet Only</option>
+                    <option value="both">Both UNet + Text Encoder (From Scratch)</option>
                 </select>
             </div>
 

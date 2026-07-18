@@ -354,10 +354,11 @@ class WebTrainApp {
      * Start training
      */
     async startTraining() {
-        const triggerWord = document.getElementById('triggerWord').value.trim();
-        const steps = parseInt(document.getElementById('trainingSteps').value);
-        const learningRate = document.getElementById('learningRate').value;
-        const batchSize = parseInt(document.getElementById('batchSize').value);
+        const triggerWord = document.getElementById('trigger-word').value.trim();
+        const steps = parseInt(document.getElementById('training-steps')?.value) || 100;
+        const learningRate = document.getElementById('learning-rate').value;
+        const trainingMode = document.getElementById('training-mode').value;
+        const trainComponents = document.getElementById('train-components').value;
 
         if (!triggerWord) {
             utils.showToast('Please enter a trigger word', 'error');
@@ -370,18 +371,28 @@ class WebTrainApp {
         }
 
         // Show progress section
-        document.getElementById('progressSection').style.display = 'block';
-        document.getElementById('startTrainBtn').disabled = true;
-        document.getElementById('cancelTrainBtn').disabled = false;
+        const progressBar = document.getElementById('progress-bar');
+        const btnTrain = document.getElementById('btn-train');
+        const btnStop = document.getElementById('btn-stop');
+        
+        if (progressBar) progressBar.style.width = '0%';
+        if (btnTrain) btnTrain.disabled = true;
+        if (btnStop) btnStop.style.display = 'block';
 
         // Setup trainer callbacks
         this.trainer.onProgress = (progress) => {
-            document.getElementById('progressFill').style.width = `${progress.percent}%`;
-            document.getElementById('progressText').textContent = progress.status;
-            document.getElementById('progressPercent').textContent = `${progress.percent.toFixed(1)}%`;
+            if (progressBar) progressBar.style.width = `${progress.percent}%`;
+            const stepsDisplay = document.getElementById('steps-display');
+            const lossDisplay = document.getElementById('loss-display');
+            if (stepsDisplay) stepsDisplay.textContent = progress.step || Math.floor(progress.percent * 100 / 100);
+            if (lossDisplay && progress.loss) lossDisplay.textContent = progress.loss.toFixed(4);
             
             if (progress.losses) {
-                utils.drawLossChart('lossChart', progress.losses);
+                // Update chart if available
+                const ctx = document.getElementById('loss-chart')?.getContext('2d');
+                if (ctx) {
+                    // Simple chart update logic can go here
+                }
             }
         };
 
@@ -393,25 +404,29 @@ class WebTrainApp {
             await this.loadLibrary();
             
             // Reset UI
-            document.getElementById('startTrainBtn').disabled = false;
-            document.getElementById('cancelTrainBtn').disabled = true;
+            if (btnTrain) btnTrain.disabled = false;
+            if (btnStop) btnStop.style.display = 'none';
             
             // Switch to library tab
-            setTimeout(() => this.switchTab('library'), 1000);
+            setTimeout(() => {
+                const tabs = document.querySelectorAll('.tab');
+                if (tabs.length > 1) tabs[1].click();
+            }, 1000);
         };
 
         this.trainer.onError = (error) => {
             utils.showToast(`Training error: ${error.message}`, 'error');
-            document.getElementById('startTrainBtn').disabled = false;
-            document.getElementById('cancelTrainBtn').disabled = true;
+            if (btnTrain) btnTrain.disabled = false;
+            if (btnStop) btnStop.style.display = 'none';
         };
 
-        // Start training
+        // Start training with mode and components
         try {
             await this.trainer.train(this.trainingImages, triggerWord, {
                 steps,
                 learningRate,
-                batchSize,
+                mode: trainingMode,
+                components: trainComponents,
                 previewImage: this.trainingImages[0]?.preview
             });
         } catch (error) {
@@ -723,3 +738,62 @@ class WebTrainApp {
 
 // Initialize app
 const app = new WebTrainApp();
+
+// Global functions for HTML onclick handlers
+function selectTrainingMode(mode) {
+    document.getElementById('training-mode').value = mode;
+    
+    const stabilizedBtn = document.getElementById('mode-stabilized');
+    const scratchBtn = document.getElementById('mode-scratch');
+    const componentsSelect = document.getElementById('train-components');
+    
+    if (mode === 'stabilized') {
+        stabilizedBtn.style.borderColor = 'var(--accent)';
+        stabilizedBtn.style.background = 'rgba(59, 130, 246, 0.1)';
+        scratchBtn.style.borderColor = 'var(--border)';
+        scratchBtn.style.background = 'transparent';
+        componentsSelect.value = 'text-encoder';
+    } else {
+        scratchBtn.style.borderColor = 'var(--accent)';
+        scratchBtn.style.background = 'rgba(59, 130, 246, 0.1)';
+        stabilizedBtn.style.borderColor = 'var(--border)';
+        stabilizedBtn.style.background = 'transparent';
+        componentsSelect.value = 'both';
+    }
+}
+
+function startTraining() {
+    if (app && app.startTraining) {
+        app.startTraining();
+    }
+}
+
+function stopTraining() {
+    if (app && app.cancelTraining) {
+        app.cancelTraining();
+    }
+}
+
+function toggleDatasetInput() {
+    const type = document.getElementById('dataset-type').value;
+    const uploadDiv = document.getElementById('input-upload');
+    const parquetDiv = document.getElementById('input-parquet');
+    
+    if (type === 'upload') {
+        uploadDiv.style.display = 'block';
+        parquetDiv.style.display = 'none';
+    } else {
+        uploadDiv.style.display = 'none';
+        parquetDiv.style.display = 'block';
+    }
+}
+
+function processDatasetFile() {
+    if (app && app.handleDataFileSelect) {
+        const dataFileInput = document.getElementById('data-file-input');
+        if (dataFileInput && dataFileInput.files.length > 0) {
+            const event = { target: dataFileInput };
+            app.handleDataFileSelect(event);
+        }
+    }
+}
