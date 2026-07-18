@@ -212,6 +212,8 @@
             cursor: pointer;
             transition: all 0.2s;
             background: rgba(51, 65, 85, 0.2);
+            position: relative;
+            z-index: 1;
         }
 
         .drop-zone:hover, .drop-zone.dragover {
@@ -220,7 +222,10 @@
             color: var(--text-main);
         }
 
-        .drop-zone p { margin-bottom: 0.5rem; }
+        .drop-zone p { 
+            margin-bottom: 0.5rem; 
+            pointer-events: none;
+        }
         .drop-zone p:last-child { font-size: 0.75rem; opacity: 0.8; }
 
         /* Column Mapper */
